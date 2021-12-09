@@ -11,7 +11,7 @@ import java.util.concurrent.ExecutionException;
 public class NewOrderMain {
     public static void main(String[] args) throws ExecutionException, InterruptedException {
         KafkaProducer<String, String> kafkaProducer = new KafkaProducer<String, String>(properties());
-        String values = "123213123, 1312313, 1312313";
+        String values = "45, 6, 10";
         ProducerRecord<String, String> producerRecord = new ProducerRecord<>("ECOMMERCE_NEW_ORDER", values, values);
 
 
