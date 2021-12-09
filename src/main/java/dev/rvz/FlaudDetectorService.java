@@ -12,7 +12,7 @@ import java.util.Properties;
 
 public class FlaudDetectorService {
     public static void main(String[] args) {
-        KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<String, String>(properties());
+        KafkaConsumer<String, String> kafkaConsumer = new KafkaConsumer<>(properties());
         kafkaConsumer.subscribe(Collections.singletonList("ECOMMERCE_NEW_ORDER"));
         while (true) {
             ConsumerRecords<String, String> consumerRecords = kafkaConsumer.poll(Duration.ofMillis(100));

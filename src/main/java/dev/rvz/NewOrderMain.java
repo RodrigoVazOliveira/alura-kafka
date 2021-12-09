@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutionException;
 
 public class NewOrderMain {
     public static void main(String[] args) throws ExecutionException, InterruptedException {
-        KafkaProducer<String, String> kafkaProducer = new KafkaProducer<String, String>(properties());
+        KafkaProducer<String, String> kafkaProducer = new KafkaProducer<>(properties());
         String values = "45, 6, 10";
         ProducerRecord<String, String> producerRecord = new ProducerRecord<>("ECOMMERCE_NEW_ORDER", values, values);
 
@@ -22,6 +22,15 @@ public class NewOrderMain {
             }
 
             System.out.println("topic: " + data.topic() + ":::partition " + data.partition() + "/ offset:" +  data.offset() + "/ timestamp: " + data.timestamp());
+        }).get();
+
+        String email = "Thank you for your order! We are processing your order!";
+        ProducerRecord<String, String> emailProducer = new ProducerRecord<>("ECOMMERCE_SEND_MAIL", email, email);
+
+        kafkaProducer.send(emailProducer, (data, ex) -> {
+            if (ex != null) {
+                ex.printStackTrace();
+            }
         }).get();
     }
 
