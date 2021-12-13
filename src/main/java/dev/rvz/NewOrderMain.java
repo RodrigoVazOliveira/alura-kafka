@@ -24,6 +24,10 @@ public class NewOrderMain {
             System.out.println("topic: " + data.topic() + ":::partition " + data.partition() + "/ offset:" +  data.offset() + "/ timestamp: " + data.timestamp());
         }).get();
 
+        sendEmailToTopicMail(kafkaProducer);
+    }
+
+    private static void sendEmailToTopicMail(KafkaProducer<String, String> kafkaProducer) throws ExecutionException, InterruptedException {
         String email = "Thank you for your order! We are processing your order!";
         ProducerRecord<String, String> emailProducer = new ProducerRecord<>("ECOMMERCE_SEND_MAIL", email, email);
 
