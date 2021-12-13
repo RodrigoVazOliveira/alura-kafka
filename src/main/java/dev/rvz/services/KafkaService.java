@@ -1,4 +1,4 @@
-package dev.rvz;
+package dev.rvz.services;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -25,7 +25,7 @@ public class KafkaService implements Closeable {
         this.consumerFunction = parse;
     }
 
-    void run() {
+    public void run() {
         waitMessage(this.kafkaConsumer);
     }
 

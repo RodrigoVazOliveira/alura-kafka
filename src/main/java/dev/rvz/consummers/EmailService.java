@@ -1,5 +1,6 @@
-package dev.rvz;
+package dev.rvz.consummers;
 
+import dev.rvz.services.KafkaService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 public class EmailService {

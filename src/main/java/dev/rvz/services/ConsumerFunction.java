@@ -1,4 +1,4 @@
-package dev.rvz;
+package dev.rvz.services;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
