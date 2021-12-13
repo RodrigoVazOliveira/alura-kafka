@@ -15,3 +15,8 @@ listar consumidores por grupo:
 ~~~bash
 $ bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --all-groups --describe
 ~~~
+
+listar os tópicos:
+~~~bash
+$ bin/kafka-topics.sh --bootstrap-server localhost:9092 --describe
+~~~
