@@ -26,10 +26,6 @@ public class KafkaDispatcher<T> implements Closeable {
                 ex.printStackTrace();
                 return;
             }
-
-            /*System.out.printf("----------------------\n TOPICO: %s,\nPartição: %d,\nOffset: %d,\ntimestamp: %d\n",
-            data.topic(), data.partition(), data.offset(), data.timestamp());*/
-
         }).get();
     }
 
