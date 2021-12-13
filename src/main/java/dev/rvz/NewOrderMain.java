@@ -6,12 +6,22 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 public class NewOrderMain {
     public static void main(String[] args) throws ExecutionException, InterruptedException {
         KafkaProducer<String, String> kafkaProducer = new KafkaProducer<>(properties());
-        String values = "45, 6, 10";
+
+        sendEmailToTopicMail(kafkaProducer);
+        for (Integer i = 0; i < 100; i++) {
+            sendNewOrder(kafkaProducer);
+        }
+    }
+
+    private static void sendNewOrder(KafkaProducer<String, String> kafkaProducer) throws ExecutionException, InterruptedException {
+        String key = UUID.randomUUID().toString();
+        String values = key + ", 45, 6, 10";
         ProducerRecord<String, String> producerRecord = new ProducerRecord<>("ECOMMERCE_NEW_ORDER", values, values);
 
 
@@ -23,13 +33,11 @@ public class NewOrderMain {
 
             System.out.println("topic: " + data.topic() + ":::partition " + data.partition() + "/ offset:" +  data.offset() + "/ timestamp: " + data.timestamp());
         }).get();
-
-        sendEmailToTopicMail(kafkaProducer);
     }
 
     private static void sendEmailToTopicMail(KafkaProducer<String, String> kafkaProducer) throws ExecutionException, InterruptedException {
         String email = "Thank you for your order! We are processing your order!";
-        ProducerRecord<String, String> emailProducer = new ProducerRecord<>("ECOMMERCE_SEND_MAIL", email, email);
+        ProducerRecord<String, String> emailProducer = new ProducerRecord<>("ECOMMERCE_SEND_MAIL", UUID.randomUUID().toString(), email);
 
         kafkaProducer.send(emailProducer, (data, ex) -> {
             if (ex != null) {
