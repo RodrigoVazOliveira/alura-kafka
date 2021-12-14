@@ -60,7 +60,14 @@ public class KafkaService<T> implements Closeable {
 
     private void showMessages(ConsumerRecords<String, T> consumerRecords) {
         for (ConsumerRecord<String, T> consumerRecord : consumerRecords) {
-            this.consumerFunction.consumer(consumerRecord);
+            try {
+                this.consumerFunction.consumer(consumerRecord);
+            } catch (Exception e) {
+                // only catches exceptions because no mattter which Exceptions
+                // i want recover and parse the next one
+                // so far, just logging the exceptions for this message
+                e.printStackTrace();
+            }
         }
     }
 

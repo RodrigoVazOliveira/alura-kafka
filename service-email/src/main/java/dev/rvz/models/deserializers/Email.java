@@ -1,5 +1,7 @@
 package dev.rvz.models.deserializers;
 
+import com.google.gson.Gson;
+
 public class Email {
     private final String subject;
     private final String body;
@@ -9,11 +11,8 @@ public class Email {
         this.body = body;
     }
 
-    public String getSubject() {
-        return subject;
-    }
-
-    public String getBody() {
-        return body;
+    @Override
+    public String toString() {
+        return new Gson().toJson(this);
     }
 }
