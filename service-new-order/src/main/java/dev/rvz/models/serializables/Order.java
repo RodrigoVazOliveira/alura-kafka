@@ -17,12 +17,4 @@ public class Order {
     public String getUserId() {
         return userId;
     }
-
-    public String getOrderId() {
-        return OrderId;
-    }
-
-    public BigDecimal getAmmount() {
-        return ammount;
-    }
 }
