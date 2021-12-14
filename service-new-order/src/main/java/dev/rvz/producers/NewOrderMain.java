@@ -16,8 +16,8 @@ public class NewOrderMain {
             Order order = new Order(UUID.randomUUID().toString(), UUID.randomUUID().toString(),
                     BigDecimal.valueOf(Math.random() * 5000 + 1), Math.random() + "@mail.com");
             Email email = new Email(UUID.randomUUID().toString(), "Thank you, new order processing success!");
-            kafkaDispatcherEmail.sendMessage("ECOMMERCE_SEND_MAIL", UUID.randomUUID().toString(), email);
-            kafkaDispatcherOrder.sendMessage("ECOMMERCE_NEW_ORDER", order.getUserId(), order);
+            kafkaDispatcherEmail.sendMessage("ECOMMERCE_SEND_MAIL", order.getEmail(), email);
+            kafkaDispatcherOrder.sendMessage("ECOMMERCE_NEW_ORDER", order.getEmail(), order);
         }
     }
 }
