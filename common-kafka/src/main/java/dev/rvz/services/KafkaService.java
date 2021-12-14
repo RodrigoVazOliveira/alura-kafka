@@ -13,7 +13,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
 public class KafkaService<T> implements Closeable {
@@ -63,7 +62,9 @@ public class KafkaService<T> implements Closeable {
         for (ConsumerRecord<String, T> consumerRecord : consumerRecords) {
             try {
                 this.consumerFunction.consumer(consumerRecord);
-            } catch (ExecutionException | InterruptedException e) {
+            } catch (Exception e) {
+                // only catches exceptions because no mattter which Exceptions
+                // i want recover and parse the next one
                 // so far, just logging the exceptions for this message
                 e.printStackTrace();
             }
