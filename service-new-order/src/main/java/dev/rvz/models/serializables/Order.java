@@ -19,4 +19,8 @@ public class Order {
     public String getUserId() {
         return userId;
     }
+
+    public String getEmail() {
+        return email;
+    }
 }
