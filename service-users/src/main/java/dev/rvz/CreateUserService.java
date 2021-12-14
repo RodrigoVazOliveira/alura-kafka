@@ -14,10 +14,15 @@ public class CreateUserService {
     public CreateUserService() throws SQLException {
         String url = "jdbc:sqlite:target/users_data.db";
         this.connection = DriverManager.getConnection(url);
-        connection.createStatement().execute("CREATE TABLE users (" +
-                "uuid VARCHAR(200) PRIMARY KEY," +
-                "email VARCHAR(200) " +
-                ")");
+        try {
+            connection.createStatement().execute("CREATE TABLE users (" +
+                    "uuid VARCHAR(200) PRIMARY KEY," +
+                    "email VARCHAR(200) " +
+                    ")");
+        } catch (SQLException e) {
+            // be careful,  the sql could be wrong,     be really careful
+            e.printStackTrace();
+        }
     }
 
     public static void main(String[] args) throws SQLException {
@@ -30,15 +35,16 @@ public class CreateUserService {
 
     private void parse(ConsumerRecord<String, Order> orderConsumerRecord) throws SQLException {
         System.out.printf("valor: %s\n", orderConsumerRecord.value());
-        if (isNewUser(orderConsumerRecord.value().getEmail())) {
-            insertNewUser(orderConsumerRecord.value().getEmail());
+        Order order = orderConsumerRecord.value();
+        if (isNewUser(order.getEmail())) {
+            insertNewUser(order.getUserId(), order.getEmail());
         }
     }
 
-    private void insertNewUser(String email) throws SQLException {
+    private void insertNewUser(String uuid, String email) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO users (uuid, email) " +
                 "VALUES (?, ?);");
-        preparedStatement.setString(1, "uuid");
+        preparedStatement.setString(1, uuid);
         preparedStatement.setString(2, email);
         preparedStatement.execute();
 
