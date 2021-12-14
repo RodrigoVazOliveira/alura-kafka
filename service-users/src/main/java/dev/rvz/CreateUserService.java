@@ -6,6 +6,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import java.sql.*;
 import java.util.HashMap;
+import java.util.UUID;
 
 public class CreateUserService {
 
@@ -37,14 +38,14 @@ public class CreateUserService {
         System.out.printf("valor: %s\n", orderConsumerRecord.value());
         Order order = orderConsumerRecord.value();
         if (isNewUser(order.getEmail())) {
-            insertNewUser(order.getUserId(), order.getEmail());
+            insertNewUser(order.getEmail());
         }
     }
 
-    private void insertNewUser(String uuid, String email) throws SQLException {
+    private void insertNewUser(String email) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO users (uuid, email) " +
                 "VALUES (?, ?);");
-        preparedStatement.setString(1, uuid);
+        preparedStatement.setString(1, UUID.randomUUID().toString());
         preparedStatement.setString(2, email);
         preparedStatement.execute();
 
