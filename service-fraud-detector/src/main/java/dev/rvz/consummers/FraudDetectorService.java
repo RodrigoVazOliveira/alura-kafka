@@ -27,9 +27,9 @@ public class FraudDetectorService {
 
         Order order = consumerRecord.value();
         if (isaFraud(order)) {
-            kafkaDispatcher.sendMessage("ECOMMERCE_ORDER_REJECTED", order.getUserId(), order);
+            kafkaDispatcher.sendMessage("ECOMMERCE_ORDER_REJECTED", order.getEmail(), order);
         } else {
-            kafkaDispatcher.sendMessage("ECOMMERCE_ORDER_APPROVED", order.getUserId(), order);
+            kafkaDispatcher.sendMessage("ECOMMERCE_ORDER_APPROVED", order.getEmail(), order);
         }
     }
 
