@@ -1,6 +1,8 @@
 package dev.rvz.services;
 
 import dev.rvz.config.GsonSerializer;
+import dev.rvz.models.CorrelationId;
+import dev.rvz.models.Message;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -12,14 +14,16 @@ import java.util.concurrent.ExecutionException;
 
 public class KafkaDispatcher<T> implements Closeable {
 
-    private final KafkaProducer<String, T> kafkaProducer;
+    private final KafkaProducer<String, Message<T>> kafkaProducer;
 
     public KafkaDispatcher() {
         this.kafkaProducer = new KafkaProducer<>(properties());
     }
 
-    public void sendMessage(String topic, String key, T value) throws ExecutionException, InterruptedException {
-        ProducerRecord<String, T> producerRecord = new ProducerRecord<>(topic, key, value);
+    public void sendMessage(String topic, String key, T payload) throws ExecutionException, InterruptedException {
+        Message<T> message = new Message<>(new CorrelationId(), payload);
+
+        ProducerRecord<String, Message<T>> producerRecord = new ProducerRecord<>(topic, key, message);
 
         kafkaProducer.send(producerRecord, (data, ex) -> {
             if (ex != null) {

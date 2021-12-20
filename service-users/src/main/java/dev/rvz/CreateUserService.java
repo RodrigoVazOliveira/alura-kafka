@@ -1,5 +1,6 @@
 package dev.rvz;
 
+import dev.rvz.models.Message;
 import dev.rvz.models.serializables.Order;
 import dev.rvz.services.KafkaService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -30,13 +31,13 @@ public class CreateUserService {
         CreateUserService createUserService = new CreateUserService();
         KafkaService<Order> kafkaService = new KafkaService<>(
                 CreateUserService.class.getSimpleName(), "ECOMMERCE_NEW_ORDER", createUserService::parse,
-                Order.class, new HashMap<>());
+                new HashMap<>());
         kafkaService.run();
     }
 
-    private void parse(ConsumerRecord<String, Order> orderConsumerRecord) throws SQLException {
+    private void parse(ConsumerRecord<String, Message<Order>> orderConsumerRecord) throws SQLException {
         System.out.printf("valor: %s\n", orderConsumerRecord.value());
-        Order order = orderConsumerRecord.value();
+        Order order = orderConsumerRecord.value().getPayload();
         if (isNewUser(order.getEmail())) {
             insertNewUser(order.getEmail());
         }

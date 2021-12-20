@@ -2,28 +2,14 @@ package dev.rvz.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import dev.rvz.models.Message;
 import org.apache.kafka.common.serialization.Deserializer;
 
-import java.util.Map;
-
-public class GsonDeserializer<T> implements Deserializer<T> {
-    public static final String TYPE_CONFIG = "dev.rvz.type_config";
-    private final Gson gson = new GsonBuilder().create();
-    private Class<T> type;
-
+public class GsonDeserializer<T> implements Deserializer<Message> {
+    private final Gson gson = new GsonBuilder().registerTypeAdapter(Message.class, new MessageAdapter()).create();
 
     @Override
-    public void configure(Map<String, ?> configs, boolean isKey) {
-        String typeName = String.valueOf(configs.get(TYPE_CONFIG));
-        try {
-            type = (Class<T>) Class.forName(typeName);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("type deserialization does not exist in the classpath.", e);
-        }
-    }
-
-    @Override
-    public T deserialize(String s, byte[] bytes) {
-        return gson.fromJson(new String(bytes), type);
+    public Message deserialize(String s, byte[] bytes) {
+        return gson.fromJson(new String(bytes), Message.class);
     }
 }
