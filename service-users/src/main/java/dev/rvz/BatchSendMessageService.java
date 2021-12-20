@@ -1,5 +1,6 @@
 package dev.rvz;
 
+import dev.rvz.models.Message;
 import dev.rvz.models.serializables.User;
 import dev.rvz.services.KafkaDispatcher;
 import dev.rvz.services.KafkaService;
@@ -26,15 +27,16 @@ public class BatchSendMessageService {
     public static void main(String[] args) throws SQLException {
         BatchSendMessageService batchSendMessageService = new BatchSendMessageService();
         KafkaService<String> kafkaService = new KafkaService<>(
-                BatchSendMessageService.class.getSimpleName(), "SEND_MESSAGE_TO_ALL_USERS", batchSendMessageService::parse,
-                String.class, new HashMap<>());
+                BatchSendMessageService.class.getSimpleName(), "SEND_MESSAGE_TO_ALL_USERS",
+                batchSendMessageService::parse,
+                new HashMap<>());
         kafkaService.run();
     }
 
-    private void parse(ConsumerRecord<String, String> record) throws SQLException, ExecutionException, InterruptedException {
+    private void parse(ConsumerRecord<String, Message<String>> record) throws SQLException, ExecutionException, InterruptedException {
         System.out.println("Processinng new batch!");
         for (User user : getAllUsers()) {
-            userKafkaDispatcher.sendMessage(record.value(), user.getUuid(), user);
+            userKafkaDispatcher.sendMessage(record.value().getPayload(), user.getUuid(), user);
         }
     }
 

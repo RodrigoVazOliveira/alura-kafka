@@ -1,6 +1,7 @@
 package dev.rvz.consummers;
 
 import dev.rvz.io.IO;
+import dev.rvz.models.Message;
 import dev.rvz.models.serializables.User;
 import dev.rvz.services.KafkaService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -16,20 +17,18 @@ public class ReadingReportService {
 
     public static void main(String[] args) {
         ReadingReportService readingReportService = new ReadingReportService();
-        KafkaService<User> kafkaService = new KafkaService(ReadingReportService.class.getSimpleName(), "USER_GENERATE_READING_REPORT",
-                readingReportService::parse, User.class, new HashMap<>());
+        KafkaService<User> kafkaService = new KafkaService<>(ReadingReportService.class.getSimpleName(), "USER_GENERATE_READING_REPORT",
+                readingReportService::parse, new HashMap<>());
         kafkaService.run();
     }
 
-    void parse(ConsumerRecord<String, User> consumerRecord) throws IOException {
+    void parse(ConsumerRecord<String, Message<User>> consumerRecord) throws IOException {
         System.out.println("Processing report for " + consumerRecord.value());
 
-        File target = new File(consumerRecord.value().getPath());
+        File target = new File(consumerRecord.value().getPayload().getPath());
         IO.copyTo(SOURCE, target);
-        IO.append(target, "Created for " + consumerRecord.value().getUuid());
+        IO.append(target, "Created for " + consumerRecord.value().getPayload().getUuid());
 
         System.out.println("File created: " + target.getAbsolutePath());
     }
-
-
 }
