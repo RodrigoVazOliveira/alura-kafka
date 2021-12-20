@@ -1,4 +1,4 @@
-package dev.rvz;
+package dev.rvz.servlets;
 
 import dev.rvz.models.deserializers.Email;
 import dev.rvz.models.serializables.Order;
