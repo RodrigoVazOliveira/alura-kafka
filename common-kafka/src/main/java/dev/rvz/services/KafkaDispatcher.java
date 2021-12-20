@@ -20,8 +20,8 @@ public class KafkaDispatcher<T> implements Closeable {
         this.kafkaProducer = new KafkaProducer<>(properties());
     }
 
-    public void sendMessage(String topic, String key, T payload) throws ExecutionException, InterruptedException {
-        Message<T> message = new Message<>(new CorrelationId(), payload);
+    public void sendMessage(String topic, String key, CorrelationId id, T payload) throws ExecutionException, InterruptedException {
+        Message<T> message = new Message<>(id, payload);
 
         ProducerRecord<String, Message<T>> producerRecord = new ProducerRecord<>(topic, key, message);
 

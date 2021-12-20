@@ -1,5 +1,6 @@
 package dev.rvz.producers;
 
+import dev.rvz.models.CorrelationId;
 import dev.rvz.models.deserializers.Email;
 import dev.rvz.models.serializables.Order;
 import dev.rvz.services.KafkaDispatcher;
@@ -16,8 +17,10 @@ public class NewOrderMain {
             Order order = new Order(UUID.randomUUID().toString(), UUID.randomUUID().toString(),
                     BigDecimal.valueOf(Math.random() * 5000 + 1), Math.random() + "@mail.com");
             Email email = new Email(UUID.randomUUID().toString(), "Thank you, new order processing success!");
-            kafkaDispatcherEmail.sendMessage("ECOMMERCE_SEND_MAIL", order.getEmail(), email);
-            kafkaDispatcherOrder.sendMessage("ECOMMERCE_NEW_ORDER", order.getEmail(), order);
+            kafkaDispatcherEmail.sendMessage("ECOMMERCE_SEND_MAIL", order.getEmail(),
+                    new CorrelationId(NewOrderMain.class.getSimpleName()),email);
+            kafkaDispatcherOrder.sendMessage("ECOMMERCE_NEW_ORDER", order.getEmail(),
+                    new CorrelationId(NewOrderMain.class.getSimpleName()),order);
         }
     }
 }
