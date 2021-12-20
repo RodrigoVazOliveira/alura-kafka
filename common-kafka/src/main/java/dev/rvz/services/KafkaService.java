@@ -1,6 +1,7 @@
 package dev.rvz.services;
 
 import dev.rvz.config.GsonDeserializer;
+import dev.rvz.models.Message;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -17,24 +18,21 @@ import java.util.regex.Pattern;
 
 public class KafkaService<T> implements Closeable {
 
-    private final KafkaConsumer<String, T> kafkaConsumer;
+    private final KafkaConsumer<String, Message<T>> kafkaConsumer;
     private final ConsumerFunction<T> consumerFunction;
     private final String groupId;
-    private final Class<T> type;
     private final Map<String, String> properties;
 
-    public KafkaService(String groupId, String topic, ConsumerFunction<T> parse, Class<T> type, Map<String, String> properties) {
+    public KafkaService(String groupId, String topic, ConsumerFunction<T> parse, Map<String, String> properties) {
         this.groupId = groupId;
-        this.type = type;
         this.properties = properties;
         this.kafkaConsumer = new KafkaConsumer<>(getProperties());
         this.kafkaConsumer.subscribe(Collections.singletonList(topic));
         this.consumerFunction = parse;
     }
 
-    public KafkaService(String groupId, Pattern topic, ConsumerFunction<T> parse, Class<T> type, Map<String, String> properties) {
+    public KafkaService(String groupId, Pattern topic, ConsumerFunction<T> parse, Map<String, String> properties) {
         this.groupId = groupId;
-        this.type = type;
         this.properties = properties;
         this.kafkaConsumer = new KafkaConsumer<>(getProperties());
         this.kafkaConsumer.subscribe(topic);
@@ -45,21 +43,21 @@ public class KafkaService<T> implements Closeable {
         waitMessage(this.kafkaConsumer);
     }
 
-    private void waitMessage(KafkaConsumer<String, T> kafkaConsumer) {
+    private void waitMessage(KafkaConsumer<String, Message<T>> kafkaConsumer) {
         while (true) {
-            ConsumerRecords<String, T> consumerRecords = kafkaConsumer.poll(Duration.ofMillis(100));
+            ConsumerRecords<String, Message<T>> consumerRecords = kafkaConsumer.poll(Duration.ofMillis(100));
             verifyRecordsNotEmpty(consumerRecords);
         }
     }
 
-    private void verifyRecordsNotEmpty(ConsumerRecords<String, T> consumerRecords) {
+    private void verifyRecordsNotEmpty(ConsumerRecords<String, Message<T>> consumerRecords) {
         if (!consumerRecords.isEmpty()) {
             showMessages(consumerRecords);
         }
     }
 
-    private void showMessages(ConsumerRecords<String, T> consumerRecords) {
-        for (ConsumerRecord<String, T> consumerRecord : consumerRecords) {
+    private void showMessages(ConsumerRecords<String, Message<T>> consumerRecords) {
+        for (ConsumerRecord<String, Message<T>> consumerRecord : consumerRecords) {
             try {
                 this.consumerFunction.consumer(consumerRecord);
             } catch (Exception e) {
@@ -78,7 +76,6 @@ public class KafkaService<T> implements Closeable {
         properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, GsonDeserializer.class.getName());
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, this.groupId);
         properties.setProperty(ConsumerConfig.CLIENT_ID_CONFIG, UUID.randomUUID().toString());
-        properties.setProperty(GsonDeserializer.TYPE_CONFIG, this.type.getName());
         properties.setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "1");
         properties.putAll(this.properties);
 

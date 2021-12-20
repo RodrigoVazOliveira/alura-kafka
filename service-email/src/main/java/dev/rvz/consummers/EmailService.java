@@ -1,5 +1,6 @@
 package dev.rvz.consummers;
 
+import dev.rvz.models.Message;
 import dev.rvz.models.deserializers.Email;
 import dev.rvz.services.KafkaService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -10,11 +11,11 @@ public class EmailService {
     public static void main(String[] args) {
         EmailService emailService = new EmailService();
         KafkaService kafkaService = new KafkaService(EmailService.class.getSimpleName(), "ECOMMERCE_SEND_MAIL",
-                emailService::parse, Email.class, new HashMap<>());
+                emailService::parse, new HashMap<>());
         kafkaService.run();
     }
 
-    private void parse(ConsumerRecord<String, Email> consumerRecord) {
+    private void parse(ConsumerRecord<String, Message<Email>> consumerRecord) {
         System.out.println("----------------------------- EMAIL ---------------------------------");
         System.out.println("chave: " + consumerRecord.key());
         System.out.println("valor: " + consumerRecord.value());
