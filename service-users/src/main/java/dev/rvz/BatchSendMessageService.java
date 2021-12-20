@@ -26,8 +26,8 @@ public class BatchSendMessageService {
 
     public static void main(String[] args) throws SQLException {
         BatchSendMessageService batchSendMessageService = new BatchSendMessageService();
-        KafkaService<String> kafkaService = new KafkaService<>(
-                BatchSendMessageService.class.getSimpleName(), "SEND_MESSAGE_TO_ALL_USERS",
+        KafkaService kafkaService = new KafkaService<>(
+                BatchSendMessageService.class.getSimpleName(), "ECOMMERCE_SEND_MESSAGE_TO_ALL_USERS",
                 batchSendMessageService::parse,
                 new HashMap<>());
         kafkaService.run();
@@ -36,7 +36,8 @@ public class BatchSendMessageService {
     private void parse(ConsumerRecord<String, Message<String>> record) throws SQLException, ExecutionException, InterruptedException {
         System.out.println("Processinng new batch!");
         for (User user : getAllUsers()) {
-            userKafkaDispatcher.sendMessage(record.value().getPayload(), user.getUuid(), user);
+            userKafkaDispatcher.sendMessage(record.value().getPayload(), user.getUuid(),
+                    record.value().getId().continueWith(BatchSendMessageService.class.getSimpleName()),user);
         }
     }
 

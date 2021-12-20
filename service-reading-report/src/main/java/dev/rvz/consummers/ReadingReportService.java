@@ -17,7 +17,7 @@ public class ReadingReportService {
 
     public static void main(String[] args) {
         ReadingReportService readingReportService = new ReadingReportService();
-        KafkaService<User> kafkaService = new KafkaService<>(ReadingReportService.class.getSimpleName(), "USER_GENERATE_READING_REPORT",
+        KafkaService<User> kafkaService = new KafkaService<>(ReadingReportService.class.getSimpleName(), "ECOMMERCE_USER_GENERATE_READING_REPORT",
                 readingReportService::parse, new HashMap<>());
         kafkaService.run();
     }

@@ -28,9 +28,12 @@ public class FraudDetectorService {
 
         Order order = consumerRecord.value().getPayload();
         if (isaFraud(order)) {
-            kafkaDispatcher.sendMessage("ECOMMERCE_ORDER_REJECTED", order.getEmail(), order);
+            kafkaDispatcher.sendMessage("ECOMMERCE_ORDER_REJECTED",
+                    order.getEmail(),
+                    consumerRecord.value().getId().continueWith(FraudDetectorService.class.getSimpleName()),order);
         } else {
-            kafkaDispatcher.sendMessage("ECOMMERCE_ORDER_APPROVED", order.getEmail(), order);
+            kafkaDispatcher.sendMessage("ECOMMERCE_ORDER_APPROVED", order.getEmail(),
+                    consumerRecord.value().getId().continueWith(FraudDetectorService.class.getSimpleName()),order);
         }
     }
 
