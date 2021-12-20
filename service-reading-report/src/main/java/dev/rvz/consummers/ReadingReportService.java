@@ -15,9 +15,9 @@ public class ReadingReportService {
     private static final Path SOURCE = new File("src/main/resources/report.txt").toPath();
 
     public static void main(String[] args) {
-        ReadingReportService fraudDetectorService = new ReadingReportService();
+        ReadingReportService readingReportService = new ReadingReportService();
         KafkaService<User> kafkaService = new KafkaService(ReadingReportService.class.getSimpleName(), "USER_GENERATE_READING_REPORT",
-                fraudDetectorService::parse, User.class, new HashMap<>());
+                readingReportService::parse, User.class, new HashMap<>());
         kafkaService.run();
     }
 
