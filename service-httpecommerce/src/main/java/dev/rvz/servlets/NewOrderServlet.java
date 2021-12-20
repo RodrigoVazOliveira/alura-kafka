@@ -1,5 +1,6 @@
 package dev.rvz.servlets;
 
+import dev.rvz.models.CorrelationId;
 import dev.rvz.models.deserializers.Email;
 import dev.rvz.models.serializables.Order;
 import dev.rvz.services.KafkaDispatcher;
@@ -33,8 +34,10 @@ public class NewOrderServlet extends HttpServlet {
             BigDecimal ammount = BigDecimal.valueOf(Long.parseLong(req.getParameter("ammount")));
             Order order = new Order(UUID.randomUUID().toString(), UUID.randomUUID().toString(), ammount, email);
             Email emailCode = new Email(UUID.randomUUID().toString(), "Thank you, new order processing success!");
-            kafkaDispatcherEmail.sendMessage("ECOMMERCE_SEND_MAIL", email, emailCode);
-            kafkaDispatcherOrder.sendMessage("ECOMMERCE_NEW_ORDER", email, order);
+            kafkaDispatcherEmail.sendMessage("ECOMMERCE_SEND_MAIL", email,
+                    new CorrelationId(NewOrderServlet.class.getSimpleName()),emailCode);
+            kafkaDispatcherOrder.sendMessage("ECOMMERCE_NEW_ORDER", email,
+                    new CorrelationId(NewOrderServlet.class.getSimpleName()),order);
 
             System.out.println("new order sent successitilly");
 
