@@ -16,7 +16,7 @@ public class ReadingReportService {
 
     public static void main(String[] args) {
         ReadingReportService fraudDetectorService = new ReadingReportService();
-        KafkaService kafkaService = new KafkaService(ReadingReportService.class.getSimpleName(), "USER_GENERATE_READING_REPORT",
+        KafkaService<User> kafkaService = new KafkaService(ReadingReportService.class.getSimpleName(), "USER_GENERATE_READING_REPORT",
                 fraudDetectorService::parse, User.class, new HashMap<>());
         kafkaService.run();
     }
