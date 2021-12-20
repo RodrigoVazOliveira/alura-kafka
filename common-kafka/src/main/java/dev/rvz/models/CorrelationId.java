@@ -1,5 +1,7 @@
 package dev.rvz.models;
 
+import com.google.gson.Gson;
+
 import java.util.UUID;
 
 public class CorrelationId {
@@ -11,5 +13,10 @@ public class CorrelationId {
 
     public String getId() {
         return id;
+    }
+
+    @Override
+    public String toString() {
+        return new Gson().toJson(this);
     }
 }
