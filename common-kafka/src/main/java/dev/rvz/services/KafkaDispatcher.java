@@ -6,11 +6,13 @@ import dev.rvz.models.Message;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.io.Closeable;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public class KafkaDispatcher<T> implements Closeable {
 
@@ -21,21 +23,29 @@ public class KafkaDispatcher<T> implements Closeable {
     }
 
     public void sendMessage(String topic, String key, CorrelationId id, T payload) throws ExecutionException, InterruptedException {
-        Message<T> message = new Message<>(id, payload);
+        producerSend(topic, key, id, payload).get();
+    }
 
-        ProducerRecord<String, Message<T>> producerRecord = new ProducerRecord<>(topic, key, message);
-
-        kafkaProducer.send(producerRecord, (data, ex) -> {
-            if (ex != null) {
-                ex.printStackTrace();
-                return;
-            }
-        }).get();
+    public void sendMessageAsync(String topic, String key, CorrelationId id, T payload) {
+        producerSend(topic, key, id, payload);
     }
 
     @Override
     public void close() {
         this.kafkaProducer.close();
+    }
+
+    private Future<RecordMetadata> producerSend(String topic, String key, CorrelationId id, T payload) {
+        Message<T> message = new Message<>(id, payload);
+
+        ProducerRecord<String, Message<T>> producerRecord = new ProducerRecord<>(topic, key, message);
+
+        return kafkaProducer.send(producerRecord, (data, ex) -> {
+            if (ex != null) {
+                ex.printStackTrace();
+                return;
+            }
+        });
     }
 
     private Properties properties() {

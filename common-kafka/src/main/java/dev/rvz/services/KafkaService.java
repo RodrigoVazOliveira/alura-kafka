@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 
 public class KafkaService<T> implements Closeable {
@@ -39,24 +40,25 @@ public class KafkaService<T> implements Closeable {
         this.consumerFunction = parse;
     }
 
-    public void run() {
+    public void run() throws ExecutionException, InterruptedException {
         waitMessage(this.kafkaConsumer);
     }
 
-    private void waitMessage(KafkaConsumer<String, Message<T>> kafkaConsumer) {
+    private void waitMessage(KafkaConsumer<String, Message<T>> kafkaConsumer) throws ExecutionException, InterruptedException {
         while (true) {
             ConsumerRecords<String, Message<T>> consumerRecords = kafkaConsumer.poll(Duration.ofMillis(100));
             verifyRecordsNotEmpty(consumerRecords);
         }
     }
 
-    private void verifyRecordsNotEmpty(ConsumerRecords<String, Message<T>> consumerRecords) {
+    private void verifyRecordsNotEmpty(ConsumerRecords<String, Message<T>> consumerRecords) throws ExecutionException, InterruptedException {
         if (!consumerRecords.isEmpty()) {
             showMessages(consumerRecords);
         }
     }
 
-    private void showMessages(ConsumerRecords<String, Message<T>> consumerRecords) {
+    private void showMessages(ConsumerRecords<String, Message<T>> consumerRecords) throws ExecutionException, InterruptedException {
+        KafkaDispatcher kafkaDispatcher = new KafkaDispatcher();
         for (ConsumerRecord<String, Message<T>> consumerRecord : consumerRecords) {
             try {
                 this.consumerFunction.consumer(consumerRecord);
@@ -64,7 +66,10 @@ public class KafkaService<T> implements Closeable {
                 // only catches exceptions because no mattter which Exceptions
                 // i want recover and parse the next one
                 // so far, just logging the exceptions for this message
-                e.printStackTrace();
+                kafkaDispatcher.sendMessage("ECOMMERCE_DEADLETTER", consumerRecord.value().getId().toString(),
+                        consumerRecord.value().getId().continueWith("DeadLetter"),
+                        consumerRecord.value().toString());
+
             }
         }
     }
