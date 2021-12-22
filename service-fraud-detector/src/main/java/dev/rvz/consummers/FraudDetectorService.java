@@ -14,7 +14,7 @@ public class FraudDetectorService {
 
     private final KafkaDispatcher<Order> kafkaDispatcher = new KafkaDispatcher<>();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
         FraudDetectorService fraudDetectorService = new FraudDetectorService();
         KafkaService kafkaService = new KafkaService<>(FraudDetectorService.class.getSimpleName(), "ECOMMERCE_NEW_ORDER",
                 fraudDetectorService::parse, new HashMap<>());
