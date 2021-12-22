@@ -24,7 +24,7 @@ public class BatchSendMessageService {
         this.connection = DriverManager.getConnection(url);
     }
 
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) throws SQLException, ExecutionException, InterruptedException {
         BatchSendMessageService batchSendMessageService = new BatchSendMessageService();
         KafkaService kafkaService = new KafkaService<>(
                 BatchSendMessageService.class.getSimpleName(), "ECOMMERCE_SEND_MESSAGE_TO_ALL_USERS",
@@ -33,11 +33,12 @@ public class BatchSendMessageService {
         kafkaService.run();
     }
 
-    private void parse(ConsumerRecord<String, Message<String>> record) throws SQLException, ExecutionException, InterruptedException {
+    private void parse(ConsumerRecord<String, Message<String>> record) throws SQLException {
         System.out.println("Processinng new batch!");
         for (User user : getAllUsers()) {
-            userKafkaDispatcher.sendMessage(record.value().getPayload(), user.getUuid(),
+            userKafkaDispatcher.sendMessageAsync(record.value().getPayload(), user.getUuid(),
                     record.value().getId().continueWith(BatchSendMessageService.class.getSimpleName()),user);
+            System.out.println("acho que envie");
         }
     }
 

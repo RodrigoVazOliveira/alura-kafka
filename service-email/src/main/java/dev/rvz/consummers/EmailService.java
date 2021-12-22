@@ -6,9 +6,10 @@ import dev.rvz.services.KafkaService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 public class EmailService {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ExecutionException, InterruptedException {
         EmailService emailService = new EmailService();
         KafkaService kafkaService = new KafkaService(EmailService.class.getSimpleName(), "ECOMMERCE_SEND_MAIL",
                 emailService::parse, new HashMap<>());
