@@ -11,6 +11,12 @@ public class Email {
         this.body = body;
     }
 
+    public String getBody() {
+        return new String(body);
+    }
+
+
+
     @Override
     public String toString() {
         return new Gson().toJson(this);
