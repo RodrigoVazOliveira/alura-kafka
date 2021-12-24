@@ -36,7 +36,7 @@ public class KafkaDispatcher<T> implements Closeable {
     }
 
     private Future<RecordMetadata> producerSend(String topic, String key, CorrelationId id, T payload) {
-        Message<T> message = new Message<>(id, payload);
+        Message<T> message = new Message<>(id.continueWith("_" + topic), payload);
 
         ProducerRecord<String, Message<T>> producerRecord = new ProducerRecord<>(topic, key, message);
 
