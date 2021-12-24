@@ -58,7 +58,7 @@ public class KafkaService<T> implements Closeable {
     }
 
     private void showMessages(ConsumerRecords<String, Message<T>> consumerRecords) throws ExecutionException, InterruptedException {
-        KafkaDispatcher kafkaDispatcher = new KafkaDispatcher();
+        KafkaDispatcher<String> kafkaDispatcher = new KafkaDispatcher<>();
         for (ConsumerRecord<String, Message<T>> consumerRecord : consumerRecords) {
             try {
                 this.consumerFunction.consumer(consumerRecord);

@@ -1,7 +1,6 @@
 package dev.rvz.servlets;
 
 import dev.rvz.models.CorrelationId;
-import dev.rvz.models.deserializers.Email;
 import dev.rvz.models.serializables.Order;
 import dev.rvz.services.KafkaDispatcher;
 
@@ -16,26 +15,18 @@ import java.util.concurrent.ExecutionException;
 
 public class NewOrderServlet extends HttpServlet {
     private final KafkaDispatcher<Order> kafkaDispatcherOrder = new KafkaDispatcher<>();
-    private final KafkaDispatcher<Email> kafkaDispatcherEmail = new KafkaDispatcher<>();
 
     @Override
     public void destroy() {
-        kafkaDispatcherOrder.close();
         kafkaDispatcherOrder.close();
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
-
-            //we are not caring about any security issues, we are only
-            // showing how to use as a startup point
             String email = req.getParameter("email");
             BigDecimal ammount = BigDecimal.valueOf(Long.parseLong(req.getParameter("ammount")));
             Order order = new Order(UUID.randomUUID().toString(), UUID.randomUUID().toString(), ammount, email);
-            Email emailCode = new Email(UUID.randomUUID().toString(), "Thank you, new order processing success!");
-            kafkaDispatcherEmail.sendMessage("ECOMMERCE_SEND_MAIL", email,
-                    new CorrelationId(NewOrderServlet.class.getSimpleName()),emailCode);
             kafkaDispatcherOrder.sendMessage("ECOMMERCE_NEW_ORDER", email,
                     new CorrelationId(NewOrderServlet.class.getSimpleName()),order);
 
