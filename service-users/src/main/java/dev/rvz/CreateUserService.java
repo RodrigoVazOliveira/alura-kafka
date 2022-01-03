@@ -1,42 +1,43 @@
 package dev.rvz;
 
+import dev.rvz.consummers.ConsumerService;
+import dev.rvz.consummers.ServiceRunner;
 import dev.rvz.models.Message;
 import dev.rvz.models.serializables.Order;
-import dev.rvz.services.KafkaService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
-import java.sql.*;
-import java.util.HashMap;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
-public class CreateUserService {
+public class CreateUserService implements ConsumerService<Order> {
 
-    private final Connection connection;
+    private final LocalDatabase database;
 
-    public CreateUserService() throws SQLException {
-        String url = "jdbc:sqlite:target/users_data.db";
-        this.connection = DriverManager.getConnection(url);
-        try {
-            connection.createStatement().execute("CREATE TABLE users (" +
+    private CreateUserService() throws SQLException {
+        this.database = new LocalDatabase("users_data");
+        this.database.createifNotExists("CREATE TABLE users (" +
                     "uuid VARCHAR(200) PRIMARY KEY," +
                     "email VARCHAR(200) " +
                     ")");
-        } catch (SQLException e) {
-            // be careful,  the sql could be wrong,     be really careful
-            e.printStackTrace();
-        }
     }
 
-    public static void main(String[] args) throws SQLException, ExecutionException, InterruptedException {
-        CreateUserService createUserService = new CreateUserService();
-        KafkaService<Order> kafkaService = new KafkaService<>(
-                CreateUserService.class.getSimpleName(), "ECOMMERCE_NEW_ORDER", createUserService::parse,
-                new HashMap<>());
-        kafkaService.run();
+    public static void main(String[] args) {
+        new ServiceRunner<>(CreateUserService::new).start(1);
     }
 
-    private void parse(ConsumerRecord<String, Message<Order>> orderConsumerRecord) throws SQLException {
+    @Override
+    public String getTopic() {
+        return "ECOMMERCE_NEW_ORDER";
+    }
+
+    @Override
+    public String getGroupId() {
+        return CreateUserService.class.getSimpleName();
+    }
+
+    @Override
+    public void parse(ConsumerRecord<String, Message<Order>> orderConsumerRecord) throws SQLException {
         System.out.printf("valor: %s\n", orderConsumerRecord.value());
         Order order = orderConsumerRecord.value().getPayload();
         if (isNewUser(order.getEmail())) {
@@ -45,20 +46,14 @@ public class CreateUserService {
     }
 
     private void insertNewUser(String email) throws SQLException {
-        PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO users (uuid, email) " +
-                "VALUES (?, ?);");
-        preparedStatement.setString(1, UUID.randomUUID().toString());
-        preparedStatement.setString(2, email);
-        preparedStatement.execute();
-
+        this.database.update("INSERT INTO users (uuid, email) " +
+                "VALUES (?, ?);", UUID.randomUUID().toString(), email);
         System.out.println("Usuário adicionado. E-Mail: " + email);
     }
 
     private boolean isNewUser(String email) throws SQLException {
-        PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM users " +
-                "WHERE email = ?;");
-        preparedStatement.setString(1, email);
-        ResultSet resultSet = preparedStatement.executeQuery();
+        ResultSet resultSet = this.database.query("SELECT * FROM users " +
+                "WHERE email = ?;", email);
 
         return !resultSet.next();
     }
