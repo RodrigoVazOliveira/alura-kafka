@@ -6,25 +6,20 @@ import dev.rvz.models.Message;
 import dev.rvz.models.serializables.Order;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.UUID;
 
 public class CreateUserService implements ConsumerService<Order> {
 
-    private final Connection connection;
+    private final LocalDatabase database;
 
     private CreateUserService() throws SQLException {
-        String url = "jdbc:sqlite:target/users_data.db";
-        this.connection = DriverManager.getConnection(url);
-        try {
-            connection.createStatement().execute("CREATE TABLE users (" +
+        this.database = new LocalDatabase("users_data");
+        this.database.createifNotExists("CREATE TABLE users (" +
                     "uuid VARCHAR(200) PRIMARY KEY," +
                     "email VARCHAR(200) " +
                     ")");
-        } catch (SQLException e) {
-            // be careful,  the sql could be wrong,     be really careful
-            e.printStackTrace();
-        }
     }
 
     public static void main(String[] args) {
@@ -51,20 +46,14 @@ public class CreateUserService implements ConsumerService<Order> {
     }
 
     private void insertNewUser(String email) throws SQLException {
-        PreparedStatement preparedStatement = connection.prepareStatement("INSERT INTO users (uuid, email) " +
-                "VALUES (?, ?);");
-        preparedStatement.setString(1, UUID.randomUUID().toString());
-        preparedStatement.setString(2, email);
-        preparedStatement.execute();
-
+        this.database.update("INSERT INTO users (uuid, email) " +
+                "VALUES (?, ?);", UUID.randomUUID().toString(), email);
         System.out.println("Usuário adicionado. E-Mail: " + email);
     }
 
     private boolean isNewUser(String email) throws SQLException {
-        PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM users " +
-                "WHERE email = ?;");
-        preparedStatement.setString(1, email);
-        ResultSet resultSet = preparedStatement.executeQuery();
+        ResultSet resultSet = this.database.query("SELECT * FROM users " +
+                "WHERE email = ?;", email);
 
         return !resultSet.next();
     }
