@@ -24,6 +24,10 @@ public class Order {
         return email;
     }
 
+    public String getOrderId() {
+        return OrderId;
+    }
+
     @Override
     public String toString() {
         return new Gson().toJson(this);
