@@ -1,20 +1,19 @@
 package dev.rvz;
 
+import dev.rvz.consummers.ConsumerService;
+import dev.rvz.consummers.ServiceRunner;
 import dev.rvz.models.Message;
 import dev.rvz.models.serializables.Order;
-import dev.rvz.services.KafkaService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 import java.sql.*;
-import java.util.HashMap;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
-public class CreateUserService {
+public class CreateUserService implements ConsumerService<Order> {
 
     private final Connection connection;
 
-    public CreateUserService() throws SQLException {
+    private CreateUserService() throws SQLException {
         String url = "jdbc:sqlite:target/users_data.db";
         this.connection = DriverManager.getConnection(url);
         try {
@@ -28,15 +27,22 @@ public class CreateUserService {
         }
     }
 
-    public static void main(String[] args) throws SQLException, ExecutionException, InterruptedException {
-        CreateUserService createUserService = new CreateUserService();
-        KafkaService<Order> kafkaService = new KafkaService<>(
-                CreateUserService.class.getSimpleName(), "ECOMMERCE_NEW_ORDER", createUserService::parse,
-                new HashMap<>());
-        kafkaService.run();
+    public static void main(String[] args) {
+        new ServiceRunner<>(CreateUserService::new).start(1);
     }
 
-    private void parse(ConsumerRecord<String, Message<Order>> orderConsumerRecord) throws SQLException {
+    @Override
+    public String getTopic() {
+        return "ECOMMERCE_NEW_ORDER";
+    }
+
+    @Override
+    public String getGroupId() {
+        return CreateUserService.class.getSimpleName();
+    }
+
+    @Override
+    public void parse(ConsumerRecord<String, Message<Order>> orderConsumerRecord) throws SQLException {
         System.out.printf("valor: %s\n", orderConsumerRecord.value());
         Order order = orderConsumerRecord.value().getPayload();
         if (isNewUser(order.getEmail())) {

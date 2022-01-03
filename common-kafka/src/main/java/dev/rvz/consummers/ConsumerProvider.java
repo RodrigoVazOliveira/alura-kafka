@@ -4,7 +4,6 @@ import dev.rvz.services.KafkaService;
 
 import java.util.HashMap;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 
 public class ConsumerProvider<T> implements Callable<Void> {
 
@@ -14,7 +13,7 @@ public class ConsumerProvider<T> implements Callable<Void> {
         this.serviceFactory = serviceFactory;
     }
 
-    public Void call() throws ExecutionException, InterruptedException {
+    public Void call() throws Exception {
         ConsumerService<T> myService = serviceFactory.create();
         KafkaService kafkaService = new KafkaService<>(myService.getGroupId(), myService.getTopic(), myService::parse, new HashMap<>());
         kafkaService.run();;
