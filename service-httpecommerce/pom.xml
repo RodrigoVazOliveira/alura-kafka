@@ -27,5 +27,10 @@
             <artifactId>common-kafka</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>dev.rvz</groupId>
+            <artifactId>commons-database</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 </project>
